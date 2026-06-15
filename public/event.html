@@ -50,16 +50,6 @@
             <input type="text" id="share-link-input" readonly value="">
             <button id="copy-share-btn">Copy Link</button>
           </div>
-          <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem;">
-            <button id="export-json-btn" class="btn btn-secondary" style="flex: 1; padding: 0.4rem; font-size: 0.75rem; border-radius: 6px;">
-              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
-              Export JSON
-            </button>
-            <button id="export-csv-btn" class="btn btn-secondary" style="flex: 1; padding: 0.4rem; font-size: 0.75rem; border-radius: 6px;">
-              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
-              Export CSV
-            </button>
-          </div>
         </div>
 
         <!-- User Sign-in / Interaction Control Section -->
@@ -134,6 +124,18 @@
             <!-- Rendered dynamically -->
             <div class="no-participants">No stats available</div>
           </div>
+        </div>
+
+        <!-- Data Export Section -->
+        <div class="sidebar-section" style="border-top: 1px solid var(--panel-border); padding-top: 1rem; margin-top: auto; display: flex; gap: 0.5rem;">
+          <button id="export-json-btn" class="btn btn-secondary" style="flex: 1; padding: 0.5rem; font-size: 0.8rem; border-radius: 6px;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px; vertical-align: middle;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+            Export JSON
+          </button>
+          <button id="export-csv-btn" class="btn btn-secondary" style="flex: 1; padding: 0.5rem; font-size: 0.8rem; border-radius: 6px;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px; vertical-align: middle;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
+            Export CSV
+          </button>
         </div>
       </div>
 
