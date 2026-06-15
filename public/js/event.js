@@ -48,7 +48,7 @@ document.addEventListener('DOMContentLoaded', () => {
   let pollInterval = null;
 
   // LocalStorage keys
-  const storageKey = `wheregeography_user_${eventId}`;
+  const storageKey = `where2meet_user_${eventId}`;
 
   // 4. Initialize page
   async function init() {
@@ -72,7 +72,7 @@ document.addEventListener('DOMContentLoaded', () => {
       // Populate metadata
       eventTitle.textContent = eventData.name;
       eventDescription.textContent = eventData.description || 'No description provided.';
-      document.title = `${eventData.name} - WhereGeography`;
+      document.title = `${eventData.name} - where2meet`;
 
       // Hide loading spinner, display main page
       loadingOverlay.style.display = 'none';

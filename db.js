@@ -53,9 +53,13 @@ function hashPin(pin) {
  * @param {object} defaultCenter { lat, lng }
  * @param {number} defaultZoom 
  */
-function createEvent(name, description, defaultCenter, defaultZoom) {
+function createEvent(name, description, defaultCenter, defaultZoom, customId) {
   const db = readDb();
-  const id = uuidv4();
+  const id = customId || uuidv4();
+  
+  if (db[id]) {
+    throw new Error('Event ID already exists');
+  }
   
   const newEvent = {
     id,
@@ -126,7 +130,7 @@ async function fetchCountry(lat, lng) {
   try {
     const response = await fetch(url, {
       headers: {
-        'User-Agent': 'WhereGeographyApp/1.0'
+        'User-Agent': 'where2meetApp/1.0'
       },
       signal: AbortSignal.timeout(3000) // 3-second timeout
     });

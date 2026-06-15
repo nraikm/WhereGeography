@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 
 :root {
   --bg-primary: #f8fafc; /* Slate 50 */
@@ -32,7 +32,7 @@
 }
 
 body {
-  font-family: 'Outfit', sans-serif;
+  font-family: 'Inter', sans-serif;
   background: var(--bg-primary);
   background-image: var(--bg-gradient);
   background-attachment: fixed;
@@ -122,18 +122,21 @@ main {
 /* Landing Page Layout */
 .landing-container {
   display: grid;
-  grid-template-columns: 1fr 1.2fr;
+  grid-template-columns: 420px 1fr;
   gap: 2.5rem;
   width: 100%;
   margin-top: 1rem;
+  height: calc(100vh - 180px);
 }
 
 .landing-sidebar {
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  padding: 3rem;
-  gap: 1.5rem;
+  justify-content: flex-start;
+  padding: 2rem;
+  gap: 1.25rem;
+  overflow-y: auto;
+  height: 100%;
 }
 
 .landing-title {
@@ -237,7 +240,7 @@ textarea.form-control {
   flex-direction: column;
   position: relative;
   overflow: hidden;
-  height: 550px;
+  height: 100%;
 }
 
 .map-label-overlay {

@@ -17,18 +17,18 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 // Create a new event
 app.post('/api/events', (req, res) => {
-  const { name, description, defaultCenter, defaultZoom } = req.body;
+  const { name, description, defaultCenter, defaultZoom, id } = req.body;
   
   if (!name || name.trim() === '') {
     return res.status(400).json({ error: 'Event name is required' });
   }
 
   try {
-    const event = db.createEvent(name, description, defaultCenter, defaultZoom);
+    const event = db.createEvent(name, description, defaultCenter, defaultZoom, id);
     return res.status(201).json(event);
   } catch (error) {
     console.error('Error creating event:', error);
-    return res.status(500).json({ error: 'Failed to create event' });
+    return res.status(400).json({ error: error.message });
   }
 });
 
@@ -91,7 +91,7 @@ module.exports = app;
 if (require.main === module) {
   app.listen(PORT, () => {
     console.log(`===================================================`);
-    console.log(`  WhereGeography Server is running!`);
+    console.log(`  where2meet Server is running!`);
     console.log(`  Local Address: http://localhost:${PORT}`);
     console.log(`===================================================`);
   });

@@ -1,5 +1,5 @@
 /**
- * WhereGeography API Client Helper
+ * where2meet API Client Helper
  */
 const WhereApi = {
   // Base URL is empty since we serve static files from the same server
@@ -12,14 +12,14 @@ const WhereApi = {
    * @param {object} defaultCenter { lat, lng }
    * @param {number} defaultZoom 
    */
-  async createEvent(name, description, defaultCenter, defaultZoom) {
+  async createEvent(name, description, defaultCenter, defaultZoom, id) {
     try {
       const response = await fetch(`${this.baseUrl}/api/events`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ name, description, defaultCenter, defaultZoom })
+        body: JSON.stringify({ name, description, defaultCenter, defaultZoom, id })
       });
 
       const data = await response.json();
