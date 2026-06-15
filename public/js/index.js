@@ -34,6 +34,9 @@ document.addEventListener('DOMContentLoaded', () => {
   // Set initial generated ID
   eventIdInput.value = generateRandomId();
 
+  // Set initial focus
+  joinEventIdInput.focus();
+
   // Bind ID generation button
   generateIdBtn.addEventListener('click', () => {
     eventIdInput.value = generateRandomId();
