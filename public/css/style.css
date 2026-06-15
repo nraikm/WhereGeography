@@ -114,7 +114,7 @@ main {
   display: flex;
   padding: 2rem;
   gap: 2rem;
-  max-width: 1600px;
+  max-width: 100%;
   width: 100%;
   margin: 0 auto;
 }
@@ -726,6 +726,7 @@ footer a:hover {
   .landing-container {
     grid-template-columns: 1fr;
     gap: 2rem;
+    height: auto;
   }
   .landing-sidebar {
     padding: 2rem;
@@ -766,5 +767,23 @@ footer a:hover {
   }
   .sidebar-panel {
     padding: 1.25rem;
+  }
+}
+
+/* Desktop screen viewport height lock */
+@media (min-width: 1025px) {
+  body {
+    height: 100vh;
+    overflow: hidden;
+  }
+  main {
+    overflow: hidden;
+  }
+  .landing-container {
+    height: 100%;
+    margin-top: 0;
+  }
+  .event-container {
+    height: 100%;
   }
 }
