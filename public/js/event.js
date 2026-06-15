@@ -84,7 +84,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
       // Populate metadata
       eventTitle.textContent = eventData.name;
-      eventDescription.textContent = eventData.description || 'No description provided.';
+      if (eventData.description && eventData.description.trim() !== '') {
+        eventDescription.textContent = eventData.description;
+        eventDescription.style.display = '';
+      } else {
+        eventDescription.style.display = 'none';
+      }
       document.title = `${eventData.name} - where2meet`;
 
       // Hide loading spinner, display main page
