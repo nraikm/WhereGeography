@@ -22,8 +22,8 @@ document.addEventListener('DOMContentLoaded', () => {
     maxZoom: 18
   }).setView([defaultLat, defaultLng], defaultZoom);
 
-  // Add CartoDB Voyager tile layer for a bright, clean look
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+  // Add CartoDB Positron tile layer for a crisp, light, document-app look
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
     subdomains: 'abcd',
     maxZoom: 20
