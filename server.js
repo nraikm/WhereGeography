@@ -49,7 +49,7 @@ app.get('/api/events/:id', (req, res) => {
 });
 
 // Join or update location for a participant
-app.post('/api/events/:id/participants', (req, res) => {
+app.post('/api/events/:id/participants', async (req, res) => {
   const { id } = req.params;
   const { name, pin, lat, lng } = req.body;
 
@@ -71,7 +71,7 @@ app.post('/api/events/:id/participants', (req, res) => {
   }
 
   try {
-    const updatedEvent = db.addOrUpdateParticipant(id, name, pin, latitude, longitude);
+    const updatedEvent = await db.addOrUpdateParticipant(id, name, pin, latitude, longitude);
     return res.json(updatedEvent);
   } catch (error) {
     console.warn(`Join warning for event ${id}: ${error.message}`);

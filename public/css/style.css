@@ -664,8 +664,52 @@ footer a {
   transition: var(--transition);
 }
 
-footer a:hover {
-  color: var(--primary);
+/* Stats Panel Styling */
+.stats-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.stats-item-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+.stats-country-info {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.stats-flag {
+  font-size: 1.1rem;
+}
+
+.stats-count-label {
+  color: var(--text-muted);
+  font-size: 0.8rem;
+}
+
+.stats-bar-bg {
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid var(--panel-border);
+  height: 8px;
+  border-radius: 4px;
+  overflow: hidden;
+  position: relative;
+  width: 100%;
+}
+
+.stats-bar-fill {
+  background: linear-gradient(90deg, var(--primary), var(--primary-hover));
+  height: 100%;
+  border-radius: 4px;
+  transition: width 1s ease-in-out;
+  width: 0;
 }
 
 /* Responsive grid layouts */

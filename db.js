@@ -86,6 +86,8 @@ function getEvent(id) {
     name,
     lat: event.participants[name].lat,
     lng: event.participants[name].lng,
+    country: event.participants[name].country || 'Unknown',
+    countryCode: event.participants[name].countryCode || '',
     updatedAt: event.participants[name].updatedAt
   }));
 
@@ -100,6 +102,53 @@ function getEvent(id) {
   };
 }
 
+// Snap coordinates to approximately X-mile blocks
+function snapToGrid(lat, lng, blockSizeMiles = 30) {
+  const milesPerDegreeLat = 69.172;
+  const latStep = blockSizeMiles / milesPerDegreeLat;
+  const snappedLat = Math.round(lat / latStep) * latStep;
+
+  // Snapped longitude uses the cosine of latitude to adjust block size
+  const latRad = (snappedLat * Math.PI) / 180;
+  const cosLat = Math.max(Math.cos(latRad), 0.05); // Prevent divide by zero near poles
+  const lngStep = blockSizeMiles / (milesPerDegreeLat * cosLat);
+  const snappedLng = Math.round(lng / lngStep) * lngStep;
+
+  return {
+    lat: Math.min(Math.max(snappedLat, -90), 90),
+    lng: Math.min(Math.max(snappedLng, -180), 180)
+  };
+}
+
+// Fetch country details using OpenStreetMap Nominatim reverse geocoding API
+async function fetchCountry(lat, lng) {
+  const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=5`;
+  try {
+    const response = await fetch(url, {
+      headers: {
+        'User-Agent': 'WhereGeographyApp/1.0'
+      },
+      signal: AbortSignal.timeout(3000) // 3-second timeout
+    });
+    if (!response.ok) {
+      return { country: 'Unknown', countryCode: '' };
+    }
+    const data = await response.json();
+    if (data.error === 'Unable to geocode') {
+      return { country: 'International Waters', countryCode: '' };
+    }
+    if (data && data.address) {
+      return {
+        country: data.address.country || 'Unknown',
+        countryCode: data.address.country_code || ''
+      };
+    }
+  } catch (error) {
+    console.error('Nominatim API reverse geocoding failed:', error.message);
+  }
+  return { country: 'Unknown', countryCode: '' };
+}
+
 /**
  * Adds or updates a participant's location in an event
  * @param {string} eventId 
@@ -108,7 +157,7 @@ function getEvent(id) {
  * @param {number} lat 
  * @param {number} lng 
  */
-function addOrUpdateParticipant(eventId, name, pin, lat, lng) {
+async function addOrUpdateParticipant(eventId, name, pin, lat, lng) {
   const db = readDb();
   const event = db[eventId];
   if (!event) {
@@ -123,6 +172,17 @@ function addOrUpdateParticipant(eventId, name, pin, lat, lng) {
   const normalizedKey = cleanedName.toLowerCase();
   const hashed = hashPin(pin);
 
+  // Snap to 30-mile grid block centers
+  const snapped = snapToGrid(lat, lng, 30);
+
+  // Resolve country
+  let countryInfo = { country: 'Unknown', countryCode: '' };
+  try {
+    countryInfo = await fetchCountry(snapped.lat, snapped.lng);
+  } catch (error) {
+    console.warn('Country resolution warning:', error);
+  }
+
   // Check if a participant with this name (case-insensitive) already exists
   const existingKey = Object.keys(event.participants).find(
     k => k.toLowerCase() === normalizedKey
@@ -131,14 +191,15 @@ function addOrUpdateParticipant(eventId, name, pin, lat, lng) {
   if (existingKey) {
     const existingParticipant = event.participants[existingKey];
     // If the participant has a PIN, verify it. 
-    // (If they didn't set a pin initially, let them set one now or bypass, but let's enforce PIN verification if set)
     if (existingParticipant.pinHash && existingParticipant.pinHash !== hashed) {
       throw new Error('Incorrect PIN. This name is already taken.');
     }
     
-    // Update location and time
-    existingParticipant.lat = lat;
-    existingParticipant.lng = lng;
+    // Update location, country details, and time
+    existingParticipant.lat = snapped.lat;
+    existingParticipant.lng = snapped.lng;
+    existingParticipant.country = countryInfo.country;
+    existingParticipant.countryCode = countryInfo.countryCode;
     existingParticipant.updatedAt = new Date().toISOString();
     // In case key casing changed slightly, normalize to what user typed this time
     if (existingKey !== cleanedName) {
@@ -148,8 +209,10 @@ function addOrUpdateParticipant(eventId, name, pin, lat, lng) {
   } else {
     // Create new participant
     event.participants[cleanedName] = {
-      lat,
-      lng,
+      lat: snapped.lat,
+      lng: snapped.lng,
+      country: countryInfo.country,
+      countryCode: countryInfo.countryCode,
       pinHash: hashed,
       updatedAt: new Date().toISOString()
     };
