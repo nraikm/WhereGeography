@@ -79,6 +79,24 @@ app.post('/api/events/:id/participants', async (req, res) => {
   }
 });
 
+// Remove a participant location
+app.delete('/api/events/:id/participants', async (req, res) => {
+  const { id } = req.params;
+  const { name, pin } = req.body;
+
+  if (!name || name.trim() === '') {
+    return res.status(400).json({ error: 'Name is required' });
+  }
+
+  try {
+    const updatedEvent = await db.deleteParticipant(id, name, pin);
+    return res.json(updatedEvent);
+  } catch (error) {
+    console.warn(`Delete warning for event ${id}: ${error.message}`);
+    return res.status(400).json({ error: error.message });
+  }
+});
+
 // Serve event.html for pretty URL routes /meet/:id
 app.get('/meet/:id', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'event.html'));

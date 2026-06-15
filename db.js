@@ -265,8 +265,57 @@ async function addOrUpdateParticipant(eventId, name, pin, lat, lng) {
   return await getEvent(eventId);
 }
 
+/**
+ * Deletes a participant from an event
+ * @param {string} eventId
+ * @param {string} name
+ * @param {string} pin
+ */
+async function deleteParticipant(eventId, name, pin) {
+  const cleanedName = name.trim();
+  if (!cleanedName) {
+    throw new Error('Name cannot be empty');
+  }
+
+  // Find the participant first to verify PIN
+  const { data: existing, error: existingError } = await supabase
+    .from('participants')
+    .select('*')
+    .eq('event_id', eventId)
+    .ilike('name', cleanedName)
+    .maybeSingle();
+
+  if (existingError) {
+    console.error('Error finding participant to delete:', existingError);
+    throw new Error('Failed to find participant');
+  }
+
+  if (!existing) {
+    throw new Error('Participant not found');
+  }
+
+  const hashed = hashPin(pin);
+  if (existing.pin_hash && existing.pin_hash !== hashed) {
+    throw new Error('Incorrect PIN. Cannot delete location.');
+  }
+
+  // Delete participant from Supabase
+  const { error: deleteError } = await supabase
+    .from('participants')
+    .delete()
+    .eq('id', existing.id);
+
+  if (deleteError) {
+    console.error('Error deleting participant in Supabase:', deleteError);
+    throw new Error('Failed to delete participant');
+  }
+
+  return await getEvent(eventId);
+}
+
 module.exports = {
   createEvent,
   getEvent,
-  addOrUpdateParticipant
+  addOrUpdateParticipant,
+  deleteParticipant
 };

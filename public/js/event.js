@@ -30,6 +30,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const copyShareBtn = document.getElementById('copy-share-btn');
   const exportJsonBtn = document.getElementById('export-json-btn');
   const exportCsvBtn = document.getElementById('export-csv-btn');
+  const deletePinBtn = document.getElementById('delete-pin-btn');
 
   const signedOutControls = document.getElementById('signed-out-controls');
   const signedInControls = document.getElementById('signed-in-controls');
@@ -622,6 +623,50 @@ document.addEventListener('DOMContentLoaded', () => {
     localStorage.removeItem(storageKey);
     currentUser = null;
     updateUI();
+  });
+
+  // 13b. Delete Pin Handler
+  deletePinBtn.addEventListener('click', async () => {
+    if (!currentUser || !eventData) return;
+    
+    const confirmDelete = confirm('Are you sure you want to delete your pinned location from this event?');
+    if (!confirmDelete) return;
+
+    deletePinBtn.disabled = true;
+    const originalContent = deletePinBtn.innerHTML;
+    deletePinBtn.innerHTML = `
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="animation: spin 1s linear infinite; color: var(--danger);">
+        <circle cx="12" cy="12" r="10" stroke-opacity="0.25"></circle>
+        <path d="M4 12a8 8 0 0 1 8-8"></path>
+      </svg>
+    `;
+
+    try {
+      eventData = await WhereApi.deleteParticipantLocation(eventId, currentUser.name, currentUser.pin);
+      
+      localStorage.removeItem(storageKey);
+      currentUser = null;
+
+      if (placementMarker) {
+        map.removeLayer(placementMarker);
+        placementMarker = null;
+      }
+      if (placementRectangle) {
+        map.removeLayer(placementRectangle);
+        placementRectangle = null;
+      }
+      placedCoords = null;
+      placedLatLabel.textContent = '--';
+      placedLngLabel.textContent = '--';
+
+      updateUI();
+      alert('Your pin has been successfully removed.');
+    } catch (error) {
+      alert(error.message || 'Failed to delete pin');
+    } finally {
+      deletePinBtn.disabled = false;
+      deletePinBtn.innerHTML = originalContent;
+    }
   });
 
   // Helper: Save participant location to backend database

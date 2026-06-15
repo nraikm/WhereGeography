@@ -78,5 +78,32 @@ const WhereApi = {
       console.error('API addParticipantLocation error:', error);
       throw error;
     }
+  },
+
+  /**
+   * Deletes a participant's location
+   * @param {string} eventId 
+   * @param {string} name 
+   * @param {string} pin 
+   */
+  async deleteParticipantLocation(eventId, name, pin) {
+    try {
+      const response = await fetch(`${this.baseUrl}/api/events/${eventId}/participants`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ name, pin })
+      });
+
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to delete location');
+      }
+      return data;
+    } catch (error) {
+      console.error('API deleteParticipantLocation error:', error);
+      throw error;
+    }
   }
 };
