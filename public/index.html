@@ -47,7 +47,7 @@
         <form id="join-event-form">
           <div class="form-group" style="margin-bottom: 1.5rem;">
             <label for="join-event-id">Event ID or URL</label>
-            <input type="text" id="join-event-id" class="form-control" placeholder="e.g., Summer-Reunion-2026 or paste full link" required autocomplete="off">
+            <input type="text" id="join-event-id" class="form-control" placeholder="e.g., Summer-Reunion-2026 or paste full link" required autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false">
             <span style="font-size: 0.75rem; color: var(--text-dim); margin-top: 0.5rem; display: inline-block;">Enter the short Event ID or paste the complete sharing URL.</span>
           </div>
 
@@ -73,7 +73,7 @@
           <div class="form-group">
             <label for="event-id">Event ID</label>
             <div style="display: flex; gap: 0.5rem; align-items: center;">
-              <input type="text" id="event-id" class="form-control" placeholder="ID sequence" required autocomplete="off" style="font-family: monospace; font-size: 0.9rem;" pattern="[a-zA-Z0-9\-]+">
+              <input type="text" id="event-id" class="form-control" placeholder="ID sequence" required autocomplete="off" style="font-family: monospace; font-size: 0.9rem;" pattern="[a-zA-Z0-9\-]+" autocapitalize="none" autocorrect="off" spellcheck="false">
               <button type="button" id="btn-generate-id" class="btn btn-secondary" style="width: auto; padding: 0.65rem 0.85rem; font-size: 0.8rem;">Generate</button>
             </div>
           </div>
