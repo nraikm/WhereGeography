@@ -31,6 +31,8 @@ document.addEventListener('DOMContentLoaded', () => {
   const exportJsonBtn = document.getElementById('export-json-btn');
   const exportCsvBtn = document.getElementById('export-csv-btn');
   const deletePinBtn = document.getElementById('delete-pin-btn');
+  const tabDetails = document.getElementById('tab-details');
+  const tabMap = document.getElementById('tab-map');
 
   const signedOutControls = document.getElementById('signed-out-controls');
   const signedInControls = document.getElementById('signed-in-controls');
@@ -561,6 +563,30 @@ document.addEventListener('DOMContentLoaded', () => {
       console.error('Failed to copy text: ', err);
     });
   });
+
+  // 11c. Mobile Tab Switcher Handler
+  if (tabDetails && tabMap) {
+    tabDetails.addEventListener('click', () => {
+      tabDetails.classList.add('active');
+      tabMap.classList.remove('active');
+      eventInterface.classList.add('show-details-tab');
+      eventInterface.classList.remove('show-map-tab');
+    });
+
+    tabMap.addEventListener('click', () => {
+      tabMap.classList.add('active');
+      tabDetails.classList.remove('active');
+      eventInterface.classList.add('show-map-tab');
+      eventInterface.classList.remove('show-details-tab');
+      
+      // Force Leaflet to recalculate viewport size when map is shown
+      if (map) {
+        setTimeout(() => {
+          map.invalidateSize();
+        }, 50);
+      }
+    });
+  }
 
   // 11b. Data Export Handlers
   exportJsonBtn.addEventListener('click', () => {
