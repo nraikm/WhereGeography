@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WhereGeography - Create Shared Map Event</title>
+  
+  <!-- Leaflet Map CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" 
+        integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" 
+        crossorigin="" />
+        
+  <!-- Custom CSS stylesheet -->
+  <link rel="stylesheet" href="css/style.css">
+  
+  <meta name="description" content="Create a shared event map, gather your friends' or colleagues' locations, and visualize where everyone is coming from. Inspired by when2meet.">
+</head>
+<body>
+  <header>
+    <a href="index.html" class="logo">
+      <div class="logo-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color: white;"><path d="M12 2a8 8 0 0 0-8 8c0 5.25 8 12 8 12s8-6.75 8-12a8 8 0 0 0-8-8z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+      </div>
+      <span>WhereGeography</span>
+    </a>
+  </header>
+
+  <main>
+    <div class="landing-container">
+      <!-- Left sidebar: Form configuration -->
+      <div class="landing-sidebar glass-panel">
+        <div>
+          <h1 class="landing-title">Where is <span>everyone</span>?</h1>
+          <p class="landing-subtitle">Create a shared map event like when2meet. Invite friends, coworkers, or family to pin their starting points on a single collective map.</p>
+        </div>
+
+        <form id="create-event-form">
+          <div class="form-group">
+            <label for="event-name">Event Name</label>
+            <input type="text" id="event-name" class="form-control" placeholder="e.g., Summer Reunion 2026" required autocomplete="off">
+          </div>
+          
+          <div class="form-group">
+            <label for="event-desc">Description (Optional)</label>
+            <textarea id="event-desc" class="form-control" placeholder="e.g., Pin where you're flying in from so we can coordinate rides!"></textarea>
+          </div>
+
+          <div style="display: flex; gap: 1rem; margin-bottom: 1.5rem;">
+            <div class="form-group" style="flex: 1; margin-bottom: 0;">
+              <label>Default Latitude</label>
+              <input type="text" id="default-lat" class="form-control" value="20.0" readonly style="opacity: 0.75;">
+            </div>
+            <div class="form-group" style="flex: 1; margin-bottom: 0;">
+              <label>Default Longitude</label>
+              <input type="text" id="default-lng" class="form-control" value="0.0" readonly style="opacity: 0.75;">
+            </div>
+            <div class="form-group" style="width: 80px; margin-bottom: 0;">
+              <label>Zoom</label>
+              <input type="text" id="default-zoom" class="form-control" value="2" readonly style="opacity: 0.75; text-align: center;">
+            </div>
+          </div>
+
+          <button type="submit" class="btn btn-primary" id="submit-btn">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+            Create Shared Map Event
+          </button>
+        </form>
+      </div>
+
+      <!-- Right sidebar: Interactive map config -->
+      <div class="map-config-container glass-panel">
+        <div class="map-label-overlay">
+          <h3>Set Starting View</h3>
+          <p>Pan and zoom the map to select the default viewport for your participants when they join.</p>
+        </div>
+        <div class="map-wrapper" id="preview-map"></div>
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    <p>WhereGeography &copy; 2026 &bull; A spatial spin on event planning inspired by when2meet</p>
+  </footer>
+
+  <!-- Leaflet Map JS -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" 
+          integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" 
+          crossorigin=""></script>
+          
+  <!-- Client API & Page scripts -->
+  <script src="js/api.js"></script>
+  <script src="js/index.js"></script>
+</body>
+</html>

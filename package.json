@@ -1,0 +1,24 @@
+{
+  "name": "where-geography",
+  "version": "1.0.0",
+  "description": "A when2meet-like collaborative geography map sharing app",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "keywords": [
+    "when2meet",
+    "map",
+    "geography",
+    "collaboration",
+    "leaflet"
+  ],
+  "author": "Antigravity",
+  "license": "ISC",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.21.2",
+    "uuid": "^11.0.3"
+  }
+}
