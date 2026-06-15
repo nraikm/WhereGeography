@@ -390,7 +390,7 @@ document.addEventListener('DOMContentLoaded', () => {
           </div>
           <div style="font-size: 0.8rem; font-weight: 500; display: flex; align-items: center; gap: 0.35rem; color: var(--text-muted); margin-bottom: 0.15rem;">
             <span>${flag}</span>
-            <span>${p.country || 'Unknown'} (Grid Snapped)</span>
+            <span>${p.country || 'Unknown'}</span>
           </div>
           <div class="popup-coords">${p.lat.toFixed(4)}, ${p.lng.toFixed(4)}</div>
           <div class="popup-time">Last Pinned: ${new Date(p.updatedAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</div>
