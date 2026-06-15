@@ -446,10 +446,30 @@ document.addEventListener('DOMContentLoaded', () => {
         `;
 
         item.addEventListener('click', () => {
+          const isMobile = window.innerWidth <= 1024;
           const marker = participantMarkers[p.name];
-          if (marker) {
-            map.setView([p.lat, p.lng], Math.max(map.getZoom(), 7));
-            marker.openPopup();
+
+          if (isMobile && tabMap) {
+            // Switch tabs to Map on mobile
+            tabMap.classList.add('active');
+            if (tabDetails) tabDetails.classList.remove('active');
+            eventInterface.classList.add('show-map-tab');
+            eventInterface.classList.remove('show-details-tab');
+
+            if (map) {
+              map.invalidateSize();
+              if (marker) {
+                setTimeout(() => {
+                  map.setView([p.lat, p.lng], Math.max(map.getZoom(), 7));
+                  marker.openPopup();
+                }, 150);
+              }
+            }
+          } else {
+            if (marker) {
+              map.setView([p.lat, p.lng], Math.max(map.getZoom(), 7));
+              marker.openPopup();
+            }
           }
         });
 
