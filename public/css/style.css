@@ -718,6 +718,55 @@ footer a:hover {
   color: var(--primary);
 }
 
+/* Segmented Control / Pill Navigation */
+.segmented-control-container {
+  display: flex;
+  margin-bottom: 1.5rem;
+  width: 100%;
+}
+
+.segmented-control {
+  display: inline-flex;
+  background: #f1f5f9; /* Slate 100 */
+  padding: 4px;
+  border-radius: 8px;
+  width: 100%;
+}
+
+.segmented-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  background: transparent;
+  border: 1px solid transparent;
+  padding: 0.55rem 0.75rem;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--text-dim);
+  cursor: pointer;
+  border-radius: 6px;
+  transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  font-family: inherit;
+}
+
+.segmented-btn:hover {
+  color: var(--text-main);
+}
+
+.segmented-btn.active {
+  background: #ffffff;
+  color: var(--text-main);
+  font-weight: 600;
+  border-color: var(--panel-border);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.segmented-btn .tab-icon {
+  color: currentColor;
+}
+
 /* Responsive grid layouts */
 @media (max-width: 1024px) {
   main {

@@ -46,10 +46,6 @@ document.addEventListener('DOMContentLoaded', () => {
   tabCreate.addEventListener('click', () => {
     tabCreate.classList.add('active');
     tabJoin.classList.remove('active');
-    tabCreate.style.borderBottom = '2px solid var(--primary)';
-    tabCreate.style.color = 'var(--text-main)';
-    tabJoin.style.borderBottom = '2px solid transparent';
-    tabJoin.style.color = 'var(--text-muted)';
     createForm.style.display = 'block';
     joinForm.style.display = 'none';
   });
@@ -57,10 +53,6 @@ document.addEventListener('DOMContentLoaded', () => {
   tabJoin.addEventListener('click', () => {
     tabJoin.classList.add('active');
     tabCreate.classList.remove('active');
-    tabJoin.style.borderBottom = '2px solid var(--primary)';
-    tabJoin.style.color = 'var(--text-main)';
-    tabCreate.style.borderBottom = '2px solid transparent';
-    tabCreate.style.color = 'var(--text-muted)';
     joinForm.style.display = 'block';
     createForm.style.display = 'none';
     joinEventIdInput.focus();
