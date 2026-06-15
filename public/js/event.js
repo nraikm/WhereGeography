@@ -31,6 +31,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const placedLngLabel = document.getElementById('placed-lng');
   const signOutBtn = document.getElementById('sign-out-btn');
   const saveLocationBtn = document.getElementById('save-location-btn');
+  const btnCurrentLocation = document.getElementById('btn-current-location');
 
   const participantCountBadge = document.getElementById('participant-count');
   const participantsListContainer = document.getElementById('participants-list');
@@ -586,6 +587,43 @@ document.addEventListener('DOMContentLoaded', () => {
       saveLocationBtn.textContent = originalText;
     }
   });
+
+  // 15. HTML5 Geolocation API Handler
+  if (btnCurrentLocation) {
+    btnCurrentLocation.addEventListener('click', () => {
+      if (!navigator.geolocation) {
+        alert('Geolocation is not supported by your browser.');
+        return;
+      }
+
+      btnCurrentLocation.disabled = true;
+      const originalText = btnCurrentLocation.innerHTML;
+      btnCurrentLocation.innerHTML = 'Locating...';
+
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const lat = position.coords.latitude;
+          const lng = position.coords.longitude;
+          
+          // Trigger the snap coordinates map click handler
+          handleMapClick(lat, lng);
+          
+          // Center the map view on the selected grid center
+          map.setView([placedCoords.lat, placedCoords.lng], Math.max(map.getZoom(), 8));
+
+          btnCurrentLocation.disabled = false;
+          btnCurrentLocation.innerHTML = originalText;
+        },
+        (error) => {
+          console.warn('Geolocation error:', error);
+          alert('Could not retrieve your location. Please check your browser permissions.');
+          btnCurrentLocation.disabled = false;
+          btnCurrentLocation.innerHTML = originalText;
+        },
+        { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 }
+      );
+    });
+  }
 
   // 15. Background updates polling
   function startPolling() {
