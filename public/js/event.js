@@ -118,19 +118,30 @@ document.addEventListener('DOMContentLoaded', () => {
       maxZoom: 20
     }).addTo(map);
 
-    // Listen to clicks on the map to position placement pin if signed in
+    // Listen to clicks on the map to position placement pin
     map.on('click', (e) => {
       if (!currentUser) {
-        // Encourage sign-in
-        userNameInput.focus();
-        // Shake the join form
-        joinForm.style.animation = 'none';
-        setTimeout(() => {
-          joinForm.style.animation = 'shake 0.5s ease-in-out';
-        }, 10);
-        return;
+        const name = userNameInput.value.trim();
+        const pin = userPinInput.value;
+
+        if (!name) {
+          // Encourage typing name first
+          userNameInput.focus();
+          // Shake the join form
+          joinForm.style.animation = 'none';
+          setTimeout(() => {
+            joinForm.style.animation = 'shake 0.5s ease-in-out';
+          }, 10);
+          return;
+        }
+
+        // Auto-join user
+        currentUser = { name, pin };
+        localStorage.setItem(storageKey, JSON.stringify(currentUser));
+        updateUI();
       }
       handleMapClick(e.latlng.lat, e.latlng.lng);
+      saveLocation(e.latlng.lat, e.latlng.lng);
     });
   }
 
@@ -538,13 +549,12 @@ document.addEventListener('DOMContentLoaded', () => {
     updateUI();
   });
 
-  // 14. Save Location Handler
-  saveLocationBtn.addEventListener('click', async () => {
+  // Helper: Save participant location to backend database
+  async function saveLocation(lat, lng) {
     if (!currentUser) return;
-    if (!placedCoords) {
-      alert('Please click a point on the map first to select your location.');
-      return;
-    }
+
+    // Use snapCoordinates to display/log correctly
+    const snapped = snapCoordinates(lat, lng, 30);
 
     saveLocationBtn.disabled = true;
     const originalText = saveLocationBtn.textContent;
@@ -556,8 +566,8 @@ document.addEventListener('DOMContentLoaded', () => {
         eventId,
         currentUser.name,
         currentUser.pin,
-        placedCoords.lat,
-        placedCoords.lng
+        snapped.lat,
+        snapped.lng
       );
 
       // Successfully saved! Clean placement graphics
@@ -569,6 +579,9 @@ document.addEventListener('DOMContentLoaded', () => {
         map.removeLayer(placementRectangle);
         placementRectangle = null;
       }
+      placedCoords = null;
+      placedLatLabel.textContent = '--';
+      placedLngLabel.textContent = '--';
 
       updateUI();
       
@@ -585,7 +598,24 @@ document.addEventListener('DOMContentLoaded', () => {
       alert(error.message);
       saveLocationBtn.disabled = false;
       saveLocationBtn.textContent = originalText;
+
+      // If saving failed due to incorrect PIN or name taken, clear login state
+      if (error.message.includes('PIN') || error.message.includes('taken')) {
+        localStorage.removeItem(storageKey);
+        currentUser = null;
+        updateUI();
+      }
     }
+  }
+
+  // 14. Save Location Handler
+  saveLocationBtn.addEventListener('click', async () => {
+    if (!currentUser) return;
+    if (!placedCoords) {
+      alert('Please click a point on the map first to select your location.');
+      return;
+    }
+    await saveLocation(placedCoords.lat, placedCoords.lng);
   });
 
   // 15. HTML5 Geolocation API Handler
@@ -610,6 +640,9 @@ document.addEventListener('DOMContentLoaded', () => {
           
           // Center the map view on the selected grid center
           map.setView([placedCoords.lat, placedCoords.lng], Math.max(map.getZoom(), 8));
+
+          // Auto-save the location immediately!
+          saveLocation(lat, lng);
 
           btnCurrentLocation.disabled = false;
           btnCurrentLocation.innerHTML = originalText;
