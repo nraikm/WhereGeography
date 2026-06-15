@@ -310,48 +310,21 @@ document.addEventListener('DOMContentLoaded', () => {
       const initials = getInitials(p.name);
       const flag = getCountryEmoji(p.countryCode);
 
-      // A. Draw Snapped Grid block rectangle (clipped to country/state boundary if available)
+      // A. Draw Snapped Grid block rectangle
       const snapped = snapCoordinates(p.lat, p.lng, 30);
       const south = p.lat - snapped.latStep / 2;
       const north = p.lat + snapped.latStep / 2;
       const west = p.lng - snapped.lngStep / 2;
       const east = p.lng + snapped.lngStep / 2;
 
-      let drawnLayer;
-      let hasClipped = false;
-
-      if (p.boundaryGeoJSON && (p.boundaryGeoJSON.type === 'Polygon' || p.boundaryGeoJSON.type === 'MultiPolygon')) {
-        try {
-          const bboxPoly = turf.bboxPolygon([west, south, east, north]);
-          const intersection = turf.intersect(bboxPoly, p.boundaryGeoJSON);
-          
-          if (intersection && intersection.geometry) {
-            drawnLayer = L.geoJSON(intersection, {
-              style: {
-                color: color,
-                weight: 1.5,
-                fillColor: color,
-                fillOpacity: 0.08
-              },
-              interactive: false
-            }).addTo(map);
-            hasClipped = true;
-          }
-        } catch (err) {
-          console.warn('Turf clipping failed, falling back to standard rectangle:', err);
-        }
-      }
-
-      if (!hasClipped) {
-        drawnLayer = L.rectangle([[south, west], [north, east]], {
-          color: color,
-          weight: 1,
-          fillColor: color,
-          fillOpacity: 0.06,
-          interactive: false
-        }).addTo(map);
-      }
-      participantRectangles.push(drawnLayer);
+      const blockRect = L.rectangle([[south, west], [north, east]], {
+        color: color,
+        weight: 1,
+        fillColor: color,
+        fillOpacity: 0.06,
+        interactive: false
+      }).addTo(map);
+      participantRectangles.push(blockRect);
 
       // B. Compute deterministic jitter offset so overlapping block markers are distinct
       const hashVal = nameHash(p.name);

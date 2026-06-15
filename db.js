@@ -92,7 +92,6 @@ function getEvent(id) {
     lng: event.participants[name].lng,
     country: event.participants[name].country || 'Unknown',
     countryCode: event.participants[name].countryCode || '',
-    boundaryGeoJSON: event.participants[name].boundaryGeoJSON || null,
     updatedAt: event.participants[name].updatedAt
   }));
 
@@ -127,7 +126,7 @@ function snapToGrid(lat, lng, blockSizeMiles = 30) {
 
 // Fetch country details using OpenStreetMap Nominatim reverse geocoding API
 async function fetchCountry(lat, lng) {
-  const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=5&polygon_geojson=1&polygon_threshold=0.015`;
+  const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=5`;
   try {
     const response = await fetch(url, {
       headers: {
@@ -136,23 +135,22 @@ async function fetchCountry(lat, lng) {
       signal: AbortSignal.timeout(3000) // 3-second timeout
     });
     if (!response.ok) {
-      return { country: 'Unknown', countryCode: '', boundaryGeoJSON: null };
+      return { country: 'Unknown', countryCode: '' };
     }
     const data = await response.json();
     if (data.error === 'Unable to geocode') {
-      return { country: 'International Waters', countryCode: '', boundaryGeoJSON: null };
+      return { country: 'International Waters', countryCode: '' };
     }
     if (data && data.address) {
       return {
         country: data.address.country || 'Unknown',
-        countryCode: data.address.country_code || '',
-        boundaryGeoJSON: data.geojson || null
+        countryCode: data.address.country_code || ''
       };
     }
   } catch (error) {
     console.error('Nominatim API reverse geocoding failed:', error.message);
   }
-  return { country: 'Unknown', countryCode: '', boundaryGeoJSON: null };
+  return { country: 'Unknown', countryCode: '' };
 }
 
 /**
@@ -206,7 +204,6 @@ async function addOrUpdateParticipant(eventId, name, pin, lat, lng) {
     existingParticipant.lng = snapped.lng;
     existingParticipant.country = countryInfo.country;
     existingParticipant.countryCode = countryInfo.countryCode;
-    existingParticipant.boundaryGeoJSON = countryInfo.boundaryGeoJSON || null;
     existingParticipant.updatedAt = new Date().toISOString();
     // In case key casing changed slightly, normalize to what user typed this time
     if (existingKey !== cleanedName) {
@@ -220,7 +217,6 @@ async function addOrUpdateParticipant(eventId, name, pin, lat, lng) {
       lng: snapped.lng,
       country: countryInfo.country,
       countryCode: countryInfo.countryCode,
-      boundaryGeoJSON: countryInfo.boundaryGeoJSON || null,
       pinHash: hashed,
       updatedAt: new Date().toISOString()
     };
