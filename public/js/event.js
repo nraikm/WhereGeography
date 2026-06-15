@@ -89,7 +89,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       // Hide loading spinner, display main page
       loadingOverlay.style.display = 'none';
-      eventInterface.style.display = 'grid';
+      eventInterface.style.display = '';
 
       // Setup Leaflet map centered at default event center
       initMap();
