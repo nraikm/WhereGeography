@@ -316,6 +316,17 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
 
+    // Group participants by grid block to calculate group size and layout index
+    const blockGroups = {};
+    eventData.participants.forEach(p => {
+      const snapped = snapCoordinates(p.lat, p.lng, 30);
+      const key = `${snapped.lat.toFixed(6)}_${snapped.lng.toFixed(6)}`;
+      if (!blockGroups[key]) {
+        blockGroups[key] = [];
+      }
+      blockGroups[key].push(p.name);
+    });
+
     // Add/Update markers and blocks
     eventData.participants.forEach(p => {
       const color = getHashColor(p.name);
@@ -338,13 +349,23 @@ document.addEventListener('DOMContentLoaded', () => {
       }).addTo(map);
       participantRectangles.push(blockRect);
 
-      // B. Compute deterministic jitter offset so overlapping block markers are distinct
-      const hashVal = nameHash(p.name);
-      // Offset circle radius (approx 1.2 miles / 0.018 degrees)
-      const angle = (hashVal % 8) * (Math.PI / 4) + (hashVal % 3) * 0.1;
-      const radius = 0.016; 
-      const jitteredLat = p.lat + Math.sin(angle) * radius;
-      const jitteredLng = p.lng + Math.cos(angle) * radius * Math.max(Math.cos(p.lat * Math.PI / 180), 0.1);
+      // B. Compute deterministic spacing offset so overlapping block markers are distinct
+      const key = `${snapped.lat.toFixed(6)}_${snapped.lng.toFixed(6)}`;
+      const members = blockGroups[key];
+      const indexInGroup = members.indexOf(p.name);
+      const groupSize = members.length;
+
+      let jitteredLat = snapped.lat;
+      let jitteredLng = snapped.lng;
+
+      if (groupSize > 1) {
+        // Distribute evenly in a circle around the center of the block
+        const angle = (indexInGroup * 2 * Math.PI) / groupSize;
+        // Radius between 0.08 and 0.12 degrees, well within the 0.216 degree half-width of a 30-mile block
+        const radius = 0.08 + Math.min(groupSize * 0.005, 0.04);
+        jitteredLat = snapped.lat + Math.sin(angle) * radius;
+        jitteredLng = snapped.lng + Math.cos(angle) * radius * Math.max(Math.cos(snapped.lat * Math.PI / 180), 0.1);
+      }
 
       const markerHtml = `
         <div class="custom-marker" data-participant-name="${p.name}">
