@@ -2,13 +2,22 @@
  * Event Page JS - Interactive Map, Grid Snapping, & Country Statistics
  */
 document.addEventListener('DOMContentLoaded', () => {
-  // 1. Get Event ID from URL
+  // 1. Get Event ID from URL (support query param ?id=... or path /meet/:id)
+  let eventId = null;
   const urlParams = new URLSearchParams(window.location.search);
-  const eventId = urlParams.get('id');
+  if (urlParams.has('id')) {
+    eventId = urlParams.get('id');
+  } else {
+    // Match /meet/xxxx
+    const match = window.location.pathname.match(/\/meet\/([^/]+)/);
+    if (match) {
+      eventId = match[1];
+    }
+  }
 
   if (!eventId) {
     // No ID provided, redirect back to creation page
-    window.location.href = 'index.html';
+    window.location.href = '/index.html';
     return;
   }
 

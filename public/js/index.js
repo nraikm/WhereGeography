@@ -124,7 +124,7 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
       const event = await WhereApi.createEvent(name, description, { lat, lng }, zoom, id);
       // Redirect to event page
-      window.location.href = `event.html?id=${event.id}`;
+      window.location.href = `/meet/${event.id}`;
     } catch (error) {
       alert(`Error: ${error.message}`);
       submitBtn.disabled = false;
@@ -141,13 +141,24 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let targetId = joinInput;
 
-    // Check if the user pasted a complete URL (contains ?id=)
+    // Check if the user pasted a complete URL (contains ?id= or /meet/)
     try {
       if (joinInput.includes('?id=')) {
         const parsedUrl = new URL(joinInput);
         const idParam = parsedUrl.searchParams.get('id');
         if (idParam) {
           targetId = idParam;
+        }
+      } else if (joinInput.includes('/meet/')) {
+        // Handle full URL paste containing pretty path /meet/xxxx
+        let urlStringToParse = joinInput;
+        if (!joinInput.startsWith('http://') && !joinInput.startsWith('https://')) {
+          urlStringToParse = window.location.protocol + '//' + joinInput;
+        }
+        const parsedUrl = new URL(urlStringToParse);
+        const match = parsedUrl.pathname.match(/\/meet\/([^/]+)/);
+        if (match) {
+          targetId = match[1];
         }
       }
     } catch (err) {
@@ -158,7 +169,7 @@ document.addEventListener('DOMContentLoaded', () => {
     targetId = targetId.trim().toLowerCase();
 
     // Redirect to the event details page
-    window.location.href = `event.html?id=${targetId}`;
+    window.location.href = `/meet/${targetId}`;
   });
 
   // Inject spinner animation style dynamically

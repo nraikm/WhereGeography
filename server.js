@@ -79,6 +79,11 @@ app.post('/api/events/:id/participants', async (req, res) => {
   }
 });
 
+// Serve event.html for pretty URL routes /meet/:id
+app.get('/meet/:id', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'event.html'));
+});
+
 // Fallback: serve event.html for sub-routes or query routes if necessary
 app.get('/event', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'event.html'));
