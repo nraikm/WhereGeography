@@ -133,7 +133,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // Form submit handler - Join Event
-  joinForm.addEventListener('submit', (e) => {
+  joinForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     const joinInput = joinEventIdInput.value.trim();
 
@@ -168,8 +168,27 @@ document.addEventListener('DOMContentLoaded', () => {
     // Clean targetId for spaces and lowercase
     targetId = targetId.trim().toLowerCase();
 
-    // Redirect to the event details page
-    window.location.href = `/meet/${targetId}`;
+    // Disable button and show loading state
+    joinSubmitBtn.disabled = true;
+    const originalText = joinSubmitBtn.innerHTML;
+    joinSubmitBtn.innerHTML = `
+      <svg class="spinner" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="animation: spin 1s linear infinite; margin-right: 0.5rem; display: inline-block; vertical-align: middle;">
+        <circle cx="12" cy="12" r="10" stroke-opacity="0.25"></circle>
+        <path d="M4 12a8 8 0 0 1 8-8"></path>
+      </svg>
+      Verifying Event...
+    `;
+
+    try {
+      // Check if event exists on server
+      await WhereApi.getEvent(targetId);
+      // Redirect to the event details page
+      window.location.href = `/meet/${targetId}`;
+    } catch (error) {
+      alert(`Event not found. Please double-check the ID or paste the correct link.`);
+      joinSubmitBtn.disabled = false;
+      joinSubmitBtn.innerHTML = originalText;
+    }
   });
 
   // Inject spinner animation style dynamically
