@@ -24,8 +24,8 @@ document.addEventListener('DOMContentLoaded', () => {
   // Helper: Generates a short, clean random ID sequence
   function generateRandomId() {
     const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
-    let result = 'meet-';
-    for (let i = 0; i < 6; i++) {
+    let result = '';
+    for (let i = 0; i < 8; i++) {
       result += chars.charAt(Math.floor(Math.random() * chars.length));
     }
     return result;
