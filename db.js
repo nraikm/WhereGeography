@@ -2,108 +2,32 @@ const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
 const { v4: uuidv4 } = require('uuid');
+const { createClient } = require('@supabase/supabase-js');
 
-const isVercel = !!process.env.VERCEL;
-const DATA_DIR = isVercel ? '/tmp' : path.join(__dirname, 'data');
-const DB_FILE = path.join(DATA_DIR, 'events.json');
-
-// Ensure database directory and file exist
-function initDb() {
-  if (!fs.existsSync(DATA_DIR)) {
-    fs.mkdirSync(DATA_DIR, { recursive: true });
-  }
-  if (!fs.existsSync(DB_FILE)) {
-    fs.writeFileSync(DB_FILE, JSON.stringify({}, null, 2), 'utf-8');
-  }
-}
-
-// Read database file
-function readDb() {
-  initDb();
+// Load environment variables from .env if running locally
+if (fs.existsSync(path.join(__dirname, '.env'))) {
   try {
-    const data = fs.readFileSync(DB_FILE, 'utf-8');
-    return JSON.parse(data);
-  } catch (error) {
-    console.error('Failed to read database, resetting DB', error);
-    return {};
+    process.loadEnvFile(path.join(__dirname, '.env'));
+  } catch (e) {
+    console.warn('Failed to load local .env file:', e.message);
   }
 }
 
-// Write to database file safely
-function writeDb(data) {
-  initDb();
-  try {
-    fs.writeFileSync(DB_FILE, JSON.stringify(data, null, 2), 'utf-8');
-  } catch (error) {
-    console.error('Failed to write database', error);
-    throw new Error('Database write failure');
-  }
+const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const SUPABASE_KEY = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
+
+if (!SUPABASE_URL || !SUPABASE_KEY) {
+  console.error('ERROR: Supabase URL and Publishable Key must be configured!');
 }
+
+const supabase = createClient(SUPABASE_URL, SUPABASE_KEY, {
+  auth: { persistSession: false }
+});
 
 // Simple SHA-256 hash helper for PINs
 function hashPin(pin) {
   if (!pin) return '';
   return crypto.createHash('sha256').update(pin.toString()).digest('hex');
-}
-
-/**
- * Creates a new event
- * @param {string} name 
- * @param {string} description 
- * @param {object} defaultCenter { lat, lng }
- * @param {number} defaultZoom 
- */
-function createEvent(name, description, defaultCenter, defaultZoom, customId) {
-  const db = readDb();
-  const id = customId || uuidv4();
-  
-  if (db[id]) {
-    throw new Error('Event ID already exists');
-  }
-  
-  const newEvent = {
-    id,
-    name: name || 'Unnamed Map Event',
-    description: description || '',
-    defaultCenter: defaultCenter || { lat: 20, lng: 0 }, // Defaults to center of earth map
-    defaultZoom: defaultZoom !== undefined ? defaultZoom : 2,
-    createdAt: new Date().toISOString(),
-    participants: {}
-  };
-
-  db[id] = newEvent;
-  writeDb(db);
-  return newEvent;
-}
-
-/**
- * Gets an event by ID (sanitized of PINs)
- * @param {string} id 
- */
-function getEvent(id) {
-  const db = readDb();
-  const event = db[id];
-  if (!event) return null;
-
-  // Sanitize event to remove PIN hashes from output
-  const sanitizedParticipants = Object.keys(event.participants).map(name => ({
-    name,
-    lat: event.participants[name].lat,
-    lng: event.participants[name].lng,
-    country: event.participants[name].country || 'Unknown',
-    countryCode: event.participants[name].countryCode || '',
-    updatedAt: event.participants[name].updatedAt
-  }));
-
-  return {
-    id: event.id,
-    name: event.name,
-    description: event.description,
-    defaultCenter: event.defaultCenter,
-    defaultZoom: event.defaultZoom,
-    createdAt: event.createdAt,
-    participants: sanitizedParticipants
-  };
 }
 
 // Snap coordinates to approximately X-mile blocks
@@ -154,6 +78,99 @@ async function fetchCountry(lat, lng) {
 }
 
 /**
+ * Creates a new event
+ * @param {string} name 
+ * @param {string} description 
+ * @param {object} defaultCenter { lat, lng }
+ * @param {number} defaultZoom 
+ */
+async function createEvent(name, description, defaultCenter, defaultZoom, customId) {
+  const id = customId || uuidv4();
+  const center = defaultCenter || { lat: 20, lng: 0 };
+  const zoom = defaultZoom !== undefined ? defaultZoom : 2;
+
+  const { data, error } = await supabase
+    .from('events')
+    .insert([
+      {
+        id,
+        name: name || 'Unnamed Map Event',
+        description: description || '',
+        default_center_lat: center.lat,
+        default_center_lng: center.lng,
+        default_zoom: zoom
+      }
+    ])
+    .select()
+    .single();
+
+  if (error) {
+    if (error.code === '23505') {
+      throw new Error('Event ID already exists');
+    }
+    console.error('Error inserting event to Supabase:', error);
+    throw new Error(`Failed to create event: ${error.message}`);
+  }
+
+  return {
+    id: data.id,
+    name: data.name,
+    description: data.description,
+    defaultCenter: { lat: data.default_center_lat, lng: data.default_center_lng },
+    defaultZoom: data.default_zoom,
+    createdAt: data.created_at,
+    participants: []
+  };
+}
+
+/**
+ * Gets an event by ID (sanitized of PINs)
+ * @param {string} id 
+ */
+async function getEvent(id) {
+  const { data: event, error: eventError } = await supabase
+    .from('events')
+    .select('*')
+    .eq('id', id)
+    .maybeSingle();
+
+  if (eventError) {
+    console.error('Error fetching event from Supabase:', eventError);
+    throw new Error('Failed to fetch event');
+  }
+  if (!event) return null;
+
+  const { data: participants, error: participantsError } = await supabase
+    .from('participants')
+    .select('*')
+    .eq('event_id', id);
+
+  if (participantsError) {
+    console.error('Error fetching participants from Supabase:', participantsError);
+    throw new Error('Failed to fetch event participants');
+  }
+
+  const sanitizedParticipants = (participants || []).map(p => ({
+    name: p.name,
+    lat: p.lat,
+    lng: p.lng,
+    country: p.country || 'Unknown',
+    countryCode: p.country_code || '',
+    updatedAt: p.updated_at
+  }));
+
+  return {
+    id: event.id,
+    name: event.name,
+    description: event.description,
+    defaultCenter: { lat: event.default_center_lat, lng: event.default_center_lng },
+    defaultZoom: event.default_zoom,
+    createdAt: event.created_at,
+    participants: sanitizedParticipants
+  };
+}
+
+/**
  * Adds or updates a participant's location in an event
  * @param {string} eventId 
  * @param {string} name 
@@ -162,21 +179,23 @@ async function fetchCountry(lat, lng) {
  * @param {number} lng 
  */
 async function addOrUpdateParticipant(eventId, name, pin, lat, lng) {
-  const db = readDb();
-  const event = db[eventId];
-  if (!event) {
-    throw new Error('Event not found');
-  }
-
   const cleanedName = name.trim();
   if (!cleanedName) {
     throw new Error('Name cannot be empty');
   }
 
-  const normalizedKey = cleanedName.toLowerCase();
-  const hashed = hashPin(pin);
+  // Check if the event exists
+  const { data: eventExists, error: checkError } = await supabase
+    .from('events')
+    .select('id')
+    .eq('id', eventId)
+    .maybeSingle();
 
-  // Snap to 30-mile grid block centers
+  if (checkError || !eventExists) {
+    throw new Error('Event not found');
+  }
+
+  const hashed = hashPin(pin);
   const snapped = snapToGrid(lat, lng, 30);
 
   // Resolve country
@@ -187,43 +206,63 @@ async function addOrUpdateParticipant(eventId, name, pin, lat, lng) {
     console.warn('Country resolution warning:', error);
   }
 
-  // Check if a participant with this name (case-insensitive) already exists
-  const existingKey = Object.keys(event.participants).find(
-    k => k.toLowerCase() === normalizedKey
-  );
+  // Find existing participant case-insensitively
+  const { data: existing, error: existingError } = await supabase
+    .from('participants')
+    .select('*')
+    .eq('event_id', eventId)
+    .ilike('name', cleanedName)
+    .maybeSingle();
 
-  if (existingKey) {
-    const existingParticipant = event.participants[existingKey];
-    // If the participant has a PIN, verify it. 
-    if (existingParticipant.pinHash && existingParticipant.pinHash !== hashed) {
-      throw new Error('Incorrect PIN. This name is already taken.');
-    }
-    
-    // Update location, country details, and time
-    existingParticipant.lat = snapped.lat;
-    existingParticipant.lng = snapped.lng;
-    existingParticipant.country = countryInfo.country;
-    existingParticipant.countryCode = countryInfo.countryCode;
-    existingParticipant.updatedAt = new Date().toISOString();
-    // In case key casing changed slightly, normalize to what user typed this time
-    if (existingKey !== cleanedName) {
-      event.participants[cleanedName] = existingParticipant;
-      delete event.participants[existingKey];
-    }
-  } else {
-    // Create new participant
-    event.participants[cleanedName] = {
-      lat: snapped.lat,
-      lng: snapped.lng,
-      country: countryInfo.country,
-      countryCode: countryInfo.countryCode,
-      pinHash: hashed,
-      updatedAt: new Date().toISOString()
-    };
+  if (existingError) {
+    console.error('Error checking existing participant in Supabase:', existingError);
+    throw new Error('Failed to check existing participant');
   }
 
-  writeDb(db);
-  return getEvent(eventId);
+  if (existing) {
+    if (existing.pin_hash && existing.pin_hash !== hashed) {
+      throw new Error('Incorrect PIN. This name is already taken.');
+    }
+
+    const { error: updateError } = await supabase
+      .from('participants')
+      .update({
+        name: cleanedName, // Normalise case if case changed
+        lat: snapped.lat,
+        lng: snapped.lng,
+        country: countryInfo.country,
+        country_code: countryInfo.countryCode,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', existing.id);
+
+    if (updateError) {
+      console.error('Error updating participant in Supabase:', updateError);
+      throw new Error('Failed to update participant location');
+    }
+  } else {
+    const { error: insertError } = await supabase
+      .from('participants')
+      .insert([
+        {
+          event_id: eventId,
+          name: cleanedName,
+          lat: snapped.lat,
+          lng: snapped.lng,
+          country: countryInfo.country,
+          country_code: countryInfo.countryCode,
+          pin_hash: hashed,
+          updated_at: new Date().toISOString()
+        }
+      ]);
+
+    if (insertError) {
+      console.error('Error inserting participant in Supabase:', insertError);
+      throw new Error('Failed to add participant location');
+    }
+  }
+
+  return await getEvent(eventId);
 }
 
 module.exports = {

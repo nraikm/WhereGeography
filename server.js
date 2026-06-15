@@ -16,7 +16,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 // API Routes
 
 // Create a new event
-app.post('/api/events', (req, res) => {
+app.post('/api/events', async (req, res) => {
   const { name, description, defaultCenter, defaultZoom, id } = req.body;
   
   if (!name || name.trim() === '') {
@@ -24,7 +24,7 @@ app.post('/api/events', (req, res) => {
   }
 
   try {
-    const event = db.createEvent(name, description, defaultCenter, defaultZoom, id);
+    const event = await db.createEvent(name, description, defaultCenter, defaultZoom, id);
     return res.status(201).json(event);
   } catch (error) {
     console.error('Error creating event:', error);
@@ -33,11 +33,11 @@ app.post('/api/events', (req, res) => {
 });
 
 // Get event by ID (with sanitized participants list)
-app.get('/api/events/:id', (req, res) => {
+app.get('/api/events/:id', async (req, res) => {
   const { id } = req.params;
 
   try {
-    const event = db.getEvent(id);
+    const event = await db.getEvent(id);
     if (!event) {
       return res.status(404).json({ error: 'Event not found' });
     }

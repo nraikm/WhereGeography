@@ -28,6 +28,8 @@ document.addEventListener('DOMContentLoaded', () => {
   const eventDescription = document.getElementById('event-description');
   const shareLinkInput = document.getElementById('share-link-input');
   const copyShareBtn = document.getElementById('copy-share-btn');
+  const exportJsonBtn = document.getElementById('export-json-btn');
+  const exportCsvBtn = document.getElementById('export-csv-btn');
 
   const signedOutControls = document.getElementById('signed-out-controls');
   const signedInControls = document.getElementById('signed-in-controls');
@@ -531,6 +533,70 @@ document.addEventListener('DOMContentLoaded', () => {
     }).catch(err => {
       console.error('Failed to copy text: ', err);
     });
+  });
+
+  // 11b. Data Export Handlers
+  exportJsonBtn.addEventListener('click', () => {
+    if (!eventData) return;
+    try {
+      const blob = new Blob([JSON.stringify(eventData, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const downloadAnchor = document.createElement('a');
+      downloadAnchor.href = url;
+      
+      const sanitizedTitle = eventData.name.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+      downloadAnchor.download = `${sanitizedTitle}_export.json`;
+      document.body.appendChild(downloadAnchor);
+      downloadAnchor.click();
+      
+      document.body.removeChild(downloadAnchor);
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error('JSON export failed:', err);
+      alert('Failed to export JSON data');
+    }
+  });
+
+  exportCsvBtn.addEventListener('click', () => {
+    if (!eventData || !eventData.participants) return;
+    try {
+      const headers = ['Participant Name', 'Latitude', 'Longitude', 'Country', 'Country Code', 'Last Updated'];
+      const rows = eventData.participants.map(p => [
+        p.name,
+        p.lat,
+        p.lng,
+        p.country || 'Unknown',
+        p.countryCode || '',
+        p.updatedAt || ''
+      ]);
+      
+      const csvContent = [
+        headers.join(','),
+        ...rows.map(r => r.map(val => {
+          const stringVal = String(val);
+          if (stringVal.includes(',') || stringVal.includes('"') || stringVal.includes('\n')) {
+            return `"${stringVal.replace(/"/g, '""')}"`;
+          }
+          return stringVal;
+        }).join(','))
+      ].join('\n');
+      
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const downloadAnchor = document.createElement('a');
+      downloadAnchor.href = url;
+      
+      const sanitizedTitle = eventData.name.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+      downloadAnchor.download = `${sanitizedTitle}_export.csv`;
+      document.body.appendChild(downloadAnchor);
+      downloadAnchor.click();
+      
+      document.body.removeChild(downloadAnchor);
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error('CSV export failed:', err);
+      alert('Failed to export CSV data');
+    }
   });
 
   // 12. Join Form Submit Handler
