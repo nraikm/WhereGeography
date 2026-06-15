@@ -783,17 +783,36 @@ footer a:hover {
   .map-config-container {
     height: 400px;
   }
+  
+  /* Mobile optimized split-screen layout for event page */
+  body.event-page {
+    height: 100vh;
+    overflow: hidden;
+  }
+  body.event-page main {
+    padding: 0.75rem;
+    overflow: hidden;
+  }
+  body.event-page footer {
+    display: none;
+  }
   .event-container {
-    grid-template-columns: 1fr;
-    height: auto;
-    gap: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    gap: 0.75rem;
   }
   .sidebar-panel {
-    max-height: 500px;
+    flex: 1;
+    overflow-y: auto;
     height: auto;
+    max-height: none;
+    padding: 1rem;
   }
   .map-panel {
-    height: 500px;
+    order: -1; /* Map on top */
+    height: 45vh;
+    flex-shrink: 0;
   }
 }
 
